@@ -9,12 +9,34 @@ const todos = ref([]);
 const name = ref("");
 
 const input_content = ref("");
-const input_catagory = ref("");
+const input_catagory = ref(null);
 
 const todos_asc = computed(() =>
   todos.value.sort((a, b) => {
-    return b.createdAt - a.createdAt;
+    return a.createdAt - b.createdAt;
   })
+);
+
+const addTodo = () => {
+  if (input_content.value.trim() === "" || input_catagory.value === null) {
+    return;
+    //If no todos exist or if there is no catagory selected, no todos will be added
+  }
+  todos.value.push({
+    content: input_content.value,
+    catagory: input_catagory.value,
+    done: false,
+    createdAt: new Date().getTime(),
+  });
+};
+
+//Allows todos to be stored on local storage
+watch(
+  todos,
+  (newVal) => {
+    localStorage.setItem("todos", JSON.stringify(newVal));
+  },
+  { deep: true }
 );
 
 //Allows the value name to be updated with a new item which is stored in local storage
@@ -24,10 +46,8 @@ watch(name, (newVal) => {
 
 //Allows for the value stord in local storage to be retrieved
 onMounted(() => {
-  localStorage.setItem("name", newVal);
+  localStorage.getItem("name" || newVal);
 });
-
-const addTodo = () => {};
 </script>
 
 <template>
@@ -37,6 +57,7 @@ const addTodo = () => {};
         What's up, <input type="text" placeholder="name" v-model="name" />
       </h2>
     </section>
+
     <section class="create-todo">
       <h3>Create a Todo!</h3>
       <form @submit.prevent="addTodo">
@@ -47,7 +68,33 @@ const addTodo = () => {};
           placeholder="e.g. Take out the trash"
           v-model="input_content"
         />
-        {{ input_content }}
+
+        <h4>Pick a catagory</h4>
+        <div class="options">
+          <label>
+            <input
+              type="radio"
+              name="catagory"
+              value="business"
+              v-model="input_catagory"
+            />
+            <span class="bubble business"></span>
+            <div>Business</div>
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="catagory"
+              value="personal"
+              v-model="input_catagory"
+            />
+            <span class="bubble personal"></span>
+            <div>Personal</div>
+          </label>
+        </div>
+
+        <input type="submit" value="Add todo" />
       </form>
     </section>
   </main>
